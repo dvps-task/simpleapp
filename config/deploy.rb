@@ -1,61 +1,79 @@
 # config valid only for current version of Capistrano
 lock "3.8.0"
 
-server "node1", user: "vagrant"
+server "node1", roles: [:web, :app], primary: true
 
 set :application, "simpleapp"
 set :repo_url, "git@github.com:dvps-task/simpleapp.git"
-set :deploy_to, "/home/#{fetch(:user)}/app/#{fetch(:application)}"
-set :log_level, :debug
-#set :linked_files, %w{config/database.yml}
-set :linked_dirs, %w{tmp/sockets log config/puma public/spree}
-set :sockets_path, Pathname.new("#{fetch(:deploy_to)}/shared/tmp/sockets/")
+set :user, "vagrant"
+set :puma_threads, [4, 16]
+set :puma_workers, 0
 
-namespace :deploy do
-  task :restart do
-    invoke 'puma:restart'
-  end
-end
+# rbenv info
+#set :rbenv_custom_path, '/home/#{fetch(:user)}/.rbenv'
+#set :rbenv_ruby, '2.0.4'
 
-namespace :simpleapp_sample do
-  task :load do
-    on roles(:app) do
-      within release_path do
-        ask(:confirm, "Are you sure you want to delete everything and start again? Type 'yes'")
-        if fetch(:confirm) == "yes"
-          execute :rake, "db:reset AUTO_ACCEPT=true"
-          execute :rake, "spree_sample:load"
-        end
-      end
-    end
-  end
-end
+# set :linked_dirs,  %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
+
+set :pty,             true
+set :use_sudo,        false
+set :stage,           :production
+set :deploy_via,      :remote_cache
+set :deploy_to,       "/home/#{fetch(:user)}/apps/#{fetch(:application)}"
+set :puma_bind,       "unix://#{shared_path}/tmp/sockets/#{fetch(:application)}-puma.sock"
+set :puma_state,      "#{shared_path}/tmp/pids/puma.state"
+set :puma_pid,        "#{shared_path}/tmp/pids/puma.pid"
+set :puma_access_log, "#{release_path}/log/puma.error.log"
+set :puma_error_log,  "#{release_path}/log/puma.access.log"
+set :ssh_options,     { forward_agent: true, user: fetch(:user), keys: %w(~/.ssh/id_rsa_ansible) }
+set :puma_preload_app, true
+set :puma_worker_timeout, nil
+set :puma_init_active_record, false  # Change to true if using ActiveRecord
+
+## Linked Files & Directories (Default None):
+# set :linked_files, %w{config/database.yml}
 
 namespace :puma do
-  desc "Restart puma instance for this application"
+  desc 'Create Directories for Puma Pids and Socket'
+  task :make_dirs do
+    on roles(:app) do
+      execute "mkdir #{shared_path}/tmp/sockets -p"
+      execute "mkdir #{shared_path}/tmp/pids -p"
+    end
+  end
+  
+  before :start, :make_dirs
+end
+
+namespace :deploy do
+  desc "Make sure local git is in sync with remote."
+  task :check_revision do
+    on roles(:app) do
+      unless `git rev-parse HEAD` == `git rev-parse origin/master`
+        puts "WARNING: HEAD is not the same as origin/master"
+        puts "Run `git push` to sync changes."
+        exit
+      end
+    end
+  end
+
+  desc 'Initial Deploy'
+  task :initial do
+    on roles(:app) do
+      before 'deploy:restart', 'puma:start'
+      invoke 'deploy'
+    end
+  end
+
+  desc 'Restart application'
   task :restart do
-    on roles fetch(:puma_roles) do
-      within release_path do
-        execute :bundle, "exec pumactl -S #{fetch(:puma_state)} restart"
-      end
+    on roles(:app), in: :sequence, wait: 5 do
+      invoke 'puma:restart'
     end
   end
 
-  desc "Show status of puma for this application"
-  task :status do
-    on roles fetch(:puma_roles) do
-      within release_path do
-        execute :bundle, "exec pumactl -S #{fetch(:puma_state)} stats"
-      end
-    end
-  end
-
-  desc "Show status of puma for all applications"
-  task :overview do
-    on roles fetch(:puma_roles) do
-      within release_path do
-        execute :bundle, "exec puma status"
-      end
-    end
-  end
+  before :starting,     :check_revision
+  after  :finishing,    :compile_assets
+  after  :finishing,    :cleanup
+  after  :finishing,    :restart
 end
