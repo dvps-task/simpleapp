@@ -38,6 +38,6 @@ Check in the browser: _http://your_ec2_public_dns_name_
 Prerequisites
 ---
 
-Don't forget about ssh keys. Add ec2 and deploy ssh keys to ssh-agent or create you ssh config.
+Don't forget about ssh keys. Add ec2 and deploy ssh keys to ssh-agent or configure you ssh config file.
 
 Place deploy public key into _ansible/roles/webserver/files/id_rsa_production.pub_.
