@@ -7,12 +7,7 @@
 # server "example.com", user: "deploy", roles: %w{app web}, other_property: :other_value
 # server "db.example.com", user: "deploy", roles: %w{db}
 
-server "node2", user: "deploy", roles: %w{app web},
-ssh_optins: {
-  keys: %w(/home/vagrant/.ssh/id_rsa_ansible),
-  forward_agent: false,
-  auth_methods: %w(publickey)
-}
+server "ec2-52-34-111-32.us-west-2.compute.amazonaws.com", user: "deploy", roles: %w{app web}
 
 # role-based syntax
 # ==================
