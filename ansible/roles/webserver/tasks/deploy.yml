@@ -1,0 +1,42 @@
+- name: Configure sudoers
+  template:
+    src: deploy-user.j2
+    dest: /etc/sudoers.d/deploy-user
+    owner: root
+    group: root
+    mode: 0440
+
+- name: Create deployment user
+  user:
+    name: "{{ deploy_user }}"
+    shell: /bin/bash
+    comment: "Application deployment user"
+    state: present
+
+- authorized_key:
+    user: "{{ deploy_user }}"
+    key: "{{ lookup('file', 'id_rsa_production.pub') }}"
+
+- name: Create deployment directory
+  file: 
+    path: "{{deploy_directory}}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+    state: directory
+
+- name: Make shared directories
+  file: 
+    path: "{{deploy_directory}}/shared/{{item}}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+    state: directory
+  with_items:
+    - tmp
+    - log
+    - public
+    - bundle
+    - bin
+    - config
+  tags: shared
+
+

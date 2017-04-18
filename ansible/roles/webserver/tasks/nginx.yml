@@ -1,0 +1,29 @@
+- name: Install nginx
+  apt: name=nginx state=latest
+
+- name: Remove the default app
+  command: rm -rf /etc/nginx/sites-enabled/default
+
+- name: Remove the app's config, if exists
+  command: "rm -rf /etc/nginx/sites-available/{{ app_name }}"
+
+- name: Remove the app's symlink, if exists
+  command: "rm -rf /etc/nginx/sites-enabled/{{ app_name }}"
+
+- name: Configure nginx for the app
+  template: 
+    src: etc_nginx_sites-available_template.conf.j2 
+    dest: "/etc/nginx/sites-available/{{ app_name }}"
+    group: www-data 
+    owner: www-data 
+    force: yes
+
+- name: Provide acess to app's socket
+  command: usermod -aG deploy www-data
+
+- name: Enable the app
+  command: "ln -s /etc/nginx/sites-available/{{ app_name }} /etc/nginx/sites-enabled/{{ app_name }}"
+
+- name: Restart nginx
+  systemd: name=nginx state=restarted
+

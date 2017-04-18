@@ -1,0 +1,14 @@
+[Unit]
+Description=Puma HTTP Server
+After=network.target
+
+[Service]
+Type=simple
+User={{ deploy_user }}
+WorkingDirectory=/srv/apps/{{ app_name }}/current
+ExecStart=/bin/bash -lc 'bundle exec puma -b 'unix:///srv/apps/simpleapp/shared/tmp/sockets/puma.sock'  -e production  --control 'unix:///srv/apps/simpleapp/shared/tmp/sockets/pumactl.sock' -S /srv/apps/simpleapp/shared/tmp/sockets/puma.state  >> /srv/apps/simpleapp/shared/log/puma-production.log 2>&1'
+ExecStop=/bin/bash -lc 'bundle exec pumactl -S /srv/apps/simpleapp/shared/tmp/sockets/puma.state stop'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

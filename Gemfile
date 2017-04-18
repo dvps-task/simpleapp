@@ -33,12 +33,14 @@ gem 'jbuilder', '~> 2.5'
 # gem 'bcrypt', '~> 3.1.7'
 
 # Use Capistrano for deployment
+# gem 'capistrano-rails', group: :development
 group :development do
-  gem 'capistrano-rails'
-  gem 'capistrano-bundler'
+  gem 'capistrano' 
+  gem 'capistrano-rails', '~> 1.1'
   gem 'capistrano-rbenv'
   gem 'capistrano3-puma'
-  gem 'capistrano-puma'
+  gem 'capistrano3-nginx'
+  gem 'capistrano-upload-config'
 end
 
 group :development, :test do

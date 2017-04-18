@@ -1,0 +1,31 @@
+---
+- name: Create ec2 instance(s)
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+    - vars/defaults.yml
+  roles:
+    - ec2-creation
+
+- name: Bootstrap Python
+  hosts: "{{ ec2_hosts }}"
+  gather_facts: False
+  remote_user: ubuntu
+  become: yes
+  vars_files:
+    - vars/defaults.yml
+  tasks:
+    - raw: apt-get  update && apt-get install -y python2.7 python-simplejson
+
+
+- name: Provision ec2 instance(s)
+  hosts: "{{ ec2_hosts }}"
+  gather_facts: False
+  remote_user: ubuntu
+  become: yes
+  vars_files:
+    - vars/defaults.yml
+    - vars/secret.yml
+  roles:
+    - webserver 
+

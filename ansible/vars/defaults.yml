@@ -1,0 +1,22 @@
+## ec2 info
+ec2_region: "us-west-2"
+ec2_type: "t2.micro"
+ec2_ami: "ami-efd0428f"  # ubuntu 16.04, SSD Volume Type
+ec2_keypair: "ansible"
+ec2_sg_name: "sg_onlyweb"
+
+## ec2 in-memory group
+ec2_hosts: "ec2hosts"
+
+## webapp
+webserver_name: "simpleapp.test"
+app_name: "simpleapp" 
+deploy_user: "deploy"
+deploy_directory: "/srv/apps/{{ app_name }}"
+
+## stolen from https://github.com/jgrowl/ansible-playbook-ruby-from-src
+rubyTmpDir: /opt
+rubyName: ruby-2.4.0
+rubyCompressedFile: "{{ rubyName }}.tar.gz"
+rubyUrl: http://cache.ruby-lang.org/pub/ruby/2.4/ruby-2.4.0.tar.gz
+rubyTmpPath: "{{rubyTmpDir}}/{{rubyName}}"
