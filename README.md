@@ -24,7 +24,7 @@ Update capistrano production config (_config/deploy/production.rb_):
 ```
 $ vim ../config/deploy/production.rb
 ...
-server "ec2-52-34-111-32.us-west-2.compute.amazonaws.com", user: "deploy", roles: %w{app web}
+server "your_ec2_public_dns_name", user: "deploy", roles: %w{app web}
 ...
 ```
 
@@ -33,6 +33,7 @@ Move to the root directory of the repo and deploy rails app to aws:
 ```
 $ capistrano production deploy
 ```
+Check in the browser: _http://your_ec2_public_dns_name_
 
 Prerequisites
 ---
