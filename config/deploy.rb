@@ -35,7 +35,7 @@ append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/syst
 # Puma:
 set :puma_conf, "#{shared_path}/config/puma.rb"
  
-namespace :deploy do
-  after 'deploy:log_revision','puma:start'
-  after 'deploy:log_revision','nginx:restart'
-end
+#namespace :deploy do
+#  after 'deploy:log_revision','puma:start'
+#  after 'deploy:log_revision','nginx:restart'
+#end
